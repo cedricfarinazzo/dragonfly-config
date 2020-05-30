@@ -1,12 +1,12 @@
 from dragonfly import Grammar, AppContext, MappingRule, Dictation, \
-        IntegerRef, Integer, Key, Text, RunCommand
+        IntegerRef, Integer, Key, Text, RunCommand, Choice
 
 grammar = Grammar("i3")
 
 class WorkspaceRule(MappingRule):
-    name = "i3"
+    name = "workspace"
     mapping = {
-        "workspace <n>": None
+        "i workspace <n>": None
     }
     extras = [
         IntegerRef("n", 1, 9)
@@ -16,8 +16,29 @@ class WorkspaceRule(MappingRule):
         n = extras["n"]
         RunCommand(f"i3-msg \"workspace {n}\"").execute()
 
+class LaunchRule(MappingRule):
+    name = "launch"
+    mapping = {
+        "i launch <text>": None
+    }
+    extras = [
+        Choice("text", {
+            "firefox": "firefox",
+            "discord": "discord",
+            "(terminal | term)": "urxvt",
+            "stats": "urxvt -e $SHELL -c 'htop'",
+            "dir": "pcmanfm",
+            "pacman": "pamac-manager",
+        })
+    ]
+
+    def _process_recognition(self, value, extras):
+        cmd = extras["text"]
+        RunCommand(f"i3-msg \"exec {cmd}\"").execute()
+
 
 grammar.add_rule(WorkspaceRule())
+grammar.add_rule(LaunchRule())
 grammar.load()
 
 def unload():
