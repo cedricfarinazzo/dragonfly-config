@@ -6,7 +6,7 @@ grammar = Grammar("dragon")
 dragon_rule = MappingRule(
     name = "dragon",
     mapping = {
-        "snore": Key("npdiv"),
+        "dragon off": Key("npdiv"),
     },
     extras = []
 )
