@@ -1,28 +1,23 @@
 from dragonfly import Grammar, AppContext, MappingRule, Dictation, \
-        IntegerRef, Integer, Key, Text, RunCommand, Choice
+        IntegerRef, Integer, Key, Text, RunCommand, Choice, Function
 
 grammar = Grammar("i3")
 
-class WorkspaceRule(MappingRule):
-    name = "workspace"
+def i3_change_workspace(n):
+    RunCommand(f"i3-msg \"workspace {n}\"").execute()
+
+def i3_launch_app(app):
+    RunCommand(f"i3-msg \"exec {app}\"").execute()
+
+
+class I3Rule(MappingRule):
     mapping = {
-        "i workspace <n>": None
+        "i workspace <n>": Function(i3_change_workspace),
+        "i launch <app>": Function(i3_launch_app)
     }
     extras = [
-        IntegerRef("n", 1, 9)
-    ]
-
-    def _process_recognition(self, value, extras):
-        n = extras["n"]
-        RunCommand(f"i3-msg \"workspace {n}\"").execute()
-
-class LaunchRule(MappingRule):
-    name = "launch"
-    mapping = {
-        "i launch <text>": None
-    }
-    extras = [
-        Choice("text", {
+        IntegerRef("n", 1, 10),
+        Choice("app", {
             "firefox": "firefox",
             "discord": "discord",
             "thunderbird": "thunderbird",
@@ -33,13 +28,7 @@ class LaunchRule(MappingRule):
         })
     ]
 
-    def _process_recognition(self, value, extras):
-        cmd = extras["text"]
-        RunCommand(f"i3-msg \"exec {cmd}\"").execute()
-
-
-grammar.add_rule(WorkspaceRule())
-grammar.add_rule(LaunchRule())
+grammar.add_rule(I3Rule())
 grammar.load()
 
 def unload():
