@@ -62,6 +62,7 @@ def main():
     # You can also set any configuration options here instead of using a
     # config.py file. For example:
     engine.config.START_ASLEEP = False
+    engine.config.DECODER_CONFIG.set_float("-vad_threshold", 3.1)
 
     # Call connect() now that the engine configuration is set.
     engine.connect()

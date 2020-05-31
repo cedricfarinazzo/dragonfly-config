@@ -25,6 +25,7 @@ class LaunchRule(MappingRule):
         Choice("text", {
             "firefox": "firefox",
             "discord": "discord",
+            "thunderbird": "thunderbird",
             "(terminal | term)": "urxvt",
             "stats": "urxvt -e $SHELL -c 'htop'",
             "dir": "pcmanfm",
