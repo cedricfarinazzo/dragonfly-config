@@ -13,13 +13,14 @@ the CMU Pocket Sphinx engine. It scans the directory it's in and loads any
 # TODO Have a simple GUI for pausing, resuming, cancelling and stopping
 # recognition, etc
 
+from language import *
 import logging
 import os.path
 import sys
 
 import six
 
-from dragonfly import get_engine
+from dragonfly import get_engine, RecognitionObserver
 from dragonfly.loader import CommandModuleDirectory
 from dragonfly.log import setup_log
 
@@ -63,6 +64,7 @@ def main():
     # config.py file. For example:
     engine.config.START_ASLEEP = False
     engine.config.DECODER_CONFIG.set_float("-vad_threshold", 3.1)
+    engine.config.LANGUAGE = LANGUAGE
 
     # Call connect() now that the engine configuration is set.
     engine.connect()
@@ -71,25 +73,23 @@ def main():
     directory = CommandModuleDirectory(path, excludes=[__file__])
     directory.load()
 
-    # Define recognition callback functions.
-    def on_begin():
-        print("Speech start detected.")
+    class Observer(RecognitionObserver):
+        def on_begin(self):
+            print("=> Speech start detected.")
 
-    def on_recognition(words):
-        message = u"Recognized: %s" % u" ".join(words)
+        def on_recognition(self, words):
+            message = u"Recognized: %s" % u" ".join(words)
+            print("=>", message)
 
-        # This only seems to be an issue with Python 2.7 on Windows.
-        if six.PY2:
-            encoding = sys.stdout.encoding or "ascii"
-            message = message.encode(encoding, errors='replace')
-        print(message)
+        def on_failure(self):
+            print("=> Sorry, what was that?")
 
-    def on_failure():
-        print("Sorry, what was that?")
+    observer = Observer()
+    observer.register()
 
     # Start the engine's main recognition loop
     try:
-        engine.do_recognition(on_begin, on_recognition, on_failure)
+        engine.recognise_forever()
     except KeyboardInterrupt:
         pass
 

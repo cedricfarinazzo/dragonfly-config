@@ -1,5 +1,6 @@
 from dragonfly import Grammar, AppContext, MappingRule, Dictation, \
         IntegerRef, Key, Text, get_engine, Function
+from language import *
 
 grammar = Grammar("dragon")
 
@@ -11,11 +12,18 @@ def disconnect():
     else:
         engine.disconnect()
 
-dragon_rule = MappingRule(
-    name = "dragon",
-    mapping = {
+rule_map_language = {
+    "en": {
         "dragon off": Function(disconnect),
     },
+    "fr": {
+        "dragon off": Function(disconnect),
+    },
+}
+
+dragon_rule = MappingRule(
+    name = "dragon",
+    mapping = rule_map_language[LANGUAGE],
     extras = []
 )
 

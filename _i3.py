@@ -1,5 +1,6 @@
 from dragonfly import Grammar, AppContext, MappingRule, Dictation, \
         IntegerRef, Integer, Key, Text, RunCommand, Choice, Function
+from language import *
 
 grammar = Grammar("i3")
 
@@ -10,11 +11,25 @@ def i3_launch_app(app):
     RunCommand(f"i3-msg \"exec {app}\"").execute()
 
 
-class I3Rule(MappingRule):
-    mapping = {
-        "i workspace <n>": Function(i3_change_workspace),
-        "i launch <app>": Function(i3_launch_app)
-    }
+def i3_fullscreen():
+    RunCommand(f"i3-msg \"fullscreen\"").execute()
+
+rule_map_language = {
+    "en": {
+        "i three workspace <n>": Function(i3_change_workspace),
+        "i three launch <app>": Function(i3_launch_app),
+        "i three full screen": Function(i3_fullscreen),
+    },
+    "fr": {
+        "i trois bureau <n>": Function(i3_change_workspace),
+        "i trois lance <app>": Function(i3_launch_app),
+        "i trois plein écran": Function(i3_fullscreen),
+    },
+}
+
+i3_rule = MappingRule(
+    name = "i",
+    mapping = rule_map_language[LANGUAGE],
     extras = [
         IntegerRef("n", 1, 10),
         Choice("app", {
@@ -23,12 +38,12 @@ class I3Rule(MappingRule):
             "thunderbird": "thunderbird",
             "(terminal | term)": "urxvt",
             "stats": "urxvt -e $SHELL -c 'htop'",
-            "dir": "pcmanfm",
+            "directory": "pcmanfm",
             "pacman": "pamac-manager",
         })
-    ]
+    ])
 
-grammar.add_rule(I3Rule())
+grammar.add_rule(i3_rule)
 grammar.load()
 
 def unload():
